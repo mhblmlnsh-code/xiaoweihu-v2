@@ -1,0 +1,486 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#F8F4EE" />
+  <meta name="description" content="小维护：替你记住那些不紧急、但值得定期照顾的小事。" />
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png" />
+  <link rel="apple-touch-icon" href="./icon-192.png" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="小维护" />
+
+      <title>小维护</title>
+  <style>
+:root {
+  --bg: #F8F4EE;
+  --card: #FFFDF9;
+  --text: #2F3A34;
+  --muted: #6E766F;
+  --line: #E9E0D6;
+  --green: #62806D;
+  --green-dark: #4D6858;
+  --green-soft: #E6EEE8;
+  --good: #DDE9E1;
+  --good-text: #476153;
+  --due: #F3E5CF;
+  --due-text: #8A6738;
+  --priority: #EEDDD6;
+  --priority-text: #8A574A;
+  --terra: #D29478;
+  --blue: #E8EEF2;
+  --blue-text: #526774;
+  --shadow: 0 8px 28px rgba(64, 50, 36, .07), 0 1px 2px rgba(64,50,36,.04);
+  --radius: 22px;
+}
+
+* { box-sizing: border-box; }
+html { background: var(--bg); color: var(--text); }
+body { margin: 0; min-height: 100vh; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans SC", "Microsoft YaHei", sans-serif; background: var(--bg); }
+button, input, select, textarea { font: inherit; }
+button { color: inherit; }
+
+.app-shell { max-width: 480px; margin: 0 auto; min-height: 100vh; padding-bottom: 96px; }
+.topbar { padding: 26px 20px 14px; }
+.eyebrow { font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+h1 { margin: 0; font-size: 26px; line-height: 1.28; letter-spacing: -.02em; }
+#pageSub { margin: 8px 0 0; color: var(--muted); font-size: 14px; line-height: 1.6; }
+.view { padding: 0 16px 26px; }
+
+.card { background: var(--card); border: 1px solid rgba(229,218,207,.9); border-radius: var(--radius); box-shadow: var(--shadow); }
+.hero-card { padding: 18px; position: relative; overflow: hidden; }
+.hero-card::after { content:""; position:absolute; width:110px; height:110px; right:-38px; top:-44px; border-radius:50%; background: rgba(98,128,109,.08); }
+.section { margin-top: 14px; }
+.section-title { display:flex; align-items:center; justify-content:space-between; gap:12px; margin: 18px 4px 10px; }
+.section-title h2 { font-size: 15px; margin:0; }
+.section-title span, .section-title button { font-size: 13px; color: var(--muted); }
+
+.status { display:inline-flex; align-items:center; border-radius:999px; padding:5px 9px; font-size:12px; font-weight:650; white-space:nowrap; }
+.status-unstarted { background: var(--blue); color: var(--blue-text); }
+.status-good { background: var(--good); color: var(--good-text); }
+.status-due { background: var(--due); color: var(--due-text); }
+.status-priority { background: var(--priority); color: var(--priority-text); }
+
+.task-top { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; }
+.task-name { font-size: 21px; line-height:1.35; font-weight:750; }
+.task-meta { display:flex; gap:8px; flex-wrap:wrap; color:var(--muted); font-size:12px; margin-top:8px; }
+.task-note { margin:14px 0 0; color:#4F5D55; line-height:1.65; font-size:14px; }
+.actions { display:flex; gap:10px; margin-top:16px; }
+.btn { border:0; border-radius:999px; padding:11px 16px; cursor:pointer; transition:.15s transform, .15s opacity; font-weight:650; }
+.btn:active { transform:scale(.98); }
+.btn-primary { background:var(--green); color:white; }
+.btn-secondary { background:#F0EAE2; }
+.btn-terra { background:#F1E2DB; color:#754F43; }
+.btn-ghost { background:transparent; color:var(--muted); padding-left:8px; padding-right:8px; }
+.btn-block { width:100%; }
+
+.quick-mode { margin: 12px 0 0; padding:14px 16px; display:flex; align-items:center; justify-content:space-between; gap:14px; }
+.quick-mode strong { display:block; font-size:14px; }
+.quick-mode small { display:block; color:var(--muted); margin-top:3px; line-height:1.5; }
+.switch { width:46px; height:28px; border-radius:999px; background:#D8D6CF; padding:3px; border:0; position:relative; flex:0 0 auto; cursor:pointer; }
+.switch i { display:block; width:22px; height:22px; border-radius:50%; background:white; box-shadow:0 2px 6px rgba(0,0,0,.14); transition:.18s transform; }
+.switch.on { background:var(--green); }
+.switch.on i { transform: translateX(18px); }
+
+.more-toggle { width:100%; margin-top:10px; background:transparent; border:0; color:var(--green-dark); font-size:13px; padding:8px; cursor:pointer; }
+.extra-list { display:grid; gap:10px; margin-top:8px; }
+.mini-task { padding:14px; }
+.mini-row { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; }
+.mini-task h3 { font-size:15px; margin:0; }
+.mini-task p { margin:6px 0 0; color:var(--muted); font-size:12px; line-height:1.5; }
+.mini-actions { display:flex; gap:6px; margin-top:10px; }
+.mini-actions .btn { padding:8px 12px; font-size:12px; }
+
+.empty { text-align:center; padding:28px 20px; }
+.empty .big { font-size:34px; margin-bottom:8px; }
+.empty p { color:var(--muted); line-height:1.65; margin:7px 0; }
+
+.maintain-group { padding:16px; margin-bottom:12px; }
+.group-head { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; }
+.group-head h2 { margin:0; font-size:17px; }
+.health { color:var(--muted); font-size:12px; text-align:right; }
+.health strong { display:block; color:var(--text); font-size:13px; margin-bottom:3px; }
+.task-list { margin-top:12px; display:grid; gap:8px; }
+.task-row { border-top:1px solid var(--line); padding-top:11px; display:flex; align-items:center; justify-content:space-between; gap:10px; }
+.task-row:first-child { border-top:0; padding-top:0; }
+.task-row button { border:0; background:transparent; padding:0; text-align:left; cursor:pointer; flex:1; }
+.task-row .name { font-size:14px; font-weight:650; }
+.task-row .sub { color:var(--muted); font-size:12px; margin-top:3px; }
+
+.record-day { margin-bottom:16px; }
+.record-day h3 { font-size:13px; color:var(--muted); margin:0 0 8px 4px; }
+.record-card { padding:14px 16px; }
+.record-item { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:8px 0; border-top:1px solid var(--line); }
+.record-item:first-child { border-top:0; }
+.record-item .left { display:flex; align-items:center; gap:9px; }
+.record-item .tick { width:24px; height:24px; border-radius:50%; display:grid; place-items:center; background:var(--green-soft); color:var(--green-dark); font-size:12px; }
+.record-item small { color:var(--muted); }
+
+.settings-card { padding:16px; margin-bottom:12px; }
+.settings-card h2 { margin:0; font-size:16px; }
+.settings-card p { margin:6px 0 0; color:var(--muted); font-size:13px; line-height:1.6; }
+.segment { display:grid; grid-template-columns: repeat(4,1fr); gap:8px; margin-top:12px; }
+.segment button { border:0; border-radius:999px; padding:9px 4px; background:#F0EAE2; cursor:pointer; font-size:13px; }
+.segment button.active { background:var(--green); color:white; }
+
+.bottom-nav { position:fixed; left:50%; bottom:0; transform:translateX(-50%); width:min(100%,480px); display:grid; grid-template-columns:repeat(4,1fr); background:rgba(255,253,249,.94); border-top:1px solid var(--line); backdrop-filter: blur(16px); padding:8px 8px calc(8px + env(safe-area-inset-bottom)); z-index:20; }
+.nav-item { background:transparent; border:0; display:flex; flex-direction:column; align-items:center; gap:3px; padding:7px 4px; color:#7D817D; cursor:pointer; }
+.nav-item span { font-size:18px; line-height:1; }
+.nav-item small { font-size:11px; }
+.nav-item.active { color:var(--green-dark); font-weight:700; }
+
+.modal-backdrop { position:fixed; inset:0; background:rgba(38,43,39,.34); z-index:40; display:flex; align-items:flex-end; justify-content:center; padding:18px 12px max(18px, env(safe-area-inset-bottom)); }
+.modal { width:min(100%,480px); max-height:90vh; overflow:auto; background:var(--card); border-radius:26px; padding:18px; box-shadow:0 20px 70px rgba(0,0,0,.22); }
+.modal-head { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:16px; }
+.modal-head h2 { margin:0; font-size:20px; }
+.close { border:0; background:#F1ECE6; border-radius:50%; width:34px; height:34px; cursor:pointer; }
+.field { margin-top:12px; }
+.field label { display:block; font-size:12px; color:var(--muted); margin-bottom:6px; }
+.field input, .field select, .field textarea { width:100%; border:1px solid #E5DCD2; background:#FBF8F3; border-radius:14px; padding:11px 12px; color:var(--text); outline:none; }
+.field input:focus, .field select:focus, .field textarea:focus { border-color:#A8B9AD; box-shadow:0 0 0 3px rgba(98,128,109,.1); }
+.grid-3 { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+.inline-check { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-top:14px; }
+.danger-zone { margin-top:14px; padding-top:14px; border-top:1px solid var(--line); }
+
+.toast { position:fixed; left:50%; bottom:88px; transform:translate(-50%, 20px); opacity:0; pointer-events:none; z-index:60; background:#314239; color:white; padding:10px 14px; border-radius:999px; font-size:13px; transition:.22s; max-width:calc(100% - 32px); text-align:center; }
+.toast.show { opacity:1; transform:translate(-50%,0); }
+
+@media (max-width: 340px) {
+  .topbar { padding-left:16px; padding-right:16px; }
+  .view { padding-left:12px; padding-right:12px; }
+  h1 { font-size:23px; }
+  .task-name { font-size:19px; }
+  .actions { gap:7px; }
+  .btn { padding:10px 13px; }
+  .grid-3 { grid-template-columns:1fr; }
+}
+
+</style>
+</head>
+<body>
+  <div id="app" class="app-shell">
+    <header class="topbar">
+      <div>
+        <div class="eyebrow" id="greeting">晚上好</div>
+        <h1 id="pageTitle">今天维护一点点就好</h1>
+        <p id="pageSub">不需要把生活一次整理完。</p>
+      </div>
+    </header>
+
+    <main id="view" class="view"></main>
+
+    <nav class="bottom-nav" aria-label="主导航">
+      <button data-tab="today" class="nav-item active"><span>⌂</span><small>今天</small></button>
+      <button data-tab="maintain" class="nav-item"><span>◫</span><small>维护</small></button>
+      <button data-tab="records" class="nav-item"><span>✓</span><small>记录</small></button>
+      <button data-tab="settings" class="nav-item"><span>⚙</span><small>设置</small></button>
+    </nav>
+  </div>
+
+  <div id="modalRoot"></div>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script>
+const STORAGE_KEY='xiaoweihu:v2';
+const LEGACY_KEY='xiaoweihu:v1';
+const VERSION=2;
+const CATEGORIES=[
+  {id:'personal',name:'个人维护'},
+  {id:'space',name:'空间维护'},
+  {id:'item',name:'物品维护'},
+];
+const DEFAULTS=[
+  ['洗头','personal',3,1,15],['换枕巾','space',5,2,3],['换床单被罩','space',14,2,20],['吸地','space',5,2,10],['拖地','space',10,2,15],['擦桌面','space',5,2,5],['倒垃圾','space',3,1,3],['洗毛巾','personal',7,2,5],['洗梳子','personal',14,3,5],['清洗水杯','item',3,1,5],['擦手机/手机壳','item',7,2,5],['清键盘','item',14,3,8],['清空调滤网','item',45,7,20],
+  ['洗浴巾','personal',7,2,5],['刷马桶','space',7,2,10],['清洗地漏','space',14,3,10],['清洗垃圾桶','space',14,3,10],['洗衣机筒清洁','item',30,5,10],['清洁冰箱内部','space',30,5,20],['洗厨房抹布/厨房毛巾','item',5,2,5],['清洁耳机','item',7,2,5],['更换牙刷/刷头','personal',90,7,3],['清洁床底/床边','space',14,3,15],
+];
+const DEFAULT_NAMES=new Set(DEFAULTS.map(x=>x[0]));
+
+const uid=()=>Math.random().toString(36).slice(2,9)+Date.now().toString(36).slice(-5);
+const todayStr=(d=new Date())=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+const parseDate=s=>{const [y,m,d]=s.split('-').map(Number); return new Date(y,m-1,d);};
+const addDays=(s,n)=>{const d=parseDate(s); d.setDate(d.getDate()+n); return todayStr(d);};
+const diffDays=(a,b=todayStr())=>Math.floor((parseDate(b)-parseDate(a))/86400000);
+const fmtDate=s=>s?`${Number(s.slice(5,7))}月${Number(s.slice(8,10))}日`:'—';
+
+function seed(){
+  return {
+    version:VERSION,
+    categories:[...CATEGORIES],
+    tasks:DEFAULTS.map(([name,categoryId,cycle,grace,minutes],i)=>({
+      id:`builtin-${i+1}`, builtin:true, name, categoryId, cycle, grace, minutes,
+      lastDone:null, baselineDate:null, enabled:true, note:'', snoozeUntil:null, createdAt:Date.now()+i
+    })),
+    records:[],
+    settings:{dailyLimit:3, oneThing:false},
+  };
+}
+
+function migrateLegacy(old){
+  const records=Array.isArray(old?.records)?old.records:[];
+  const recordTaskIds=new Set(records.map(r=>r.taskId));
+  const tasks=(Array.isArray(old?.tasks)?old.tasks:[]).map((t,i)=>{
+    const looksBuiltin=DEFAULT_NAMES.has(t.name);
+    const hasRealRecord=recordTaskIds.has(t.id);
+    return {
+      id:t.id||uid(), builtin: t.builtin ?? looksBuiltin,
+      name:t.name||`维护 ${i+1}`, categoryId:t.categoryId||'personal',
+      cycle:Number(t.cycle)||7, grace:Number(t.grace)||2, minutes:Number(t.minutes)||5,
+      lastDone: (looksBuiltin && !hasRealRecord) ? null : (t.lastDone||null),
+      baselineDate:null, enabled:t.enabled!==false, note:t.note||'', snoozeUntil:t.snoozeUntil||null,
+      createdAt:t.createdAt||Date.now()+i,
+    };
+  });
+  // Legacy可能只有13项，补齐缺少的默认项目，但不重复。
+  const names=new Set(tasks.map(t=>t.name));
+  DEFAULTS.forEach(([name,categoryId,cycle,grace,minutes],i)=>{
+    if(!names.has(name)) tasks.push({id:`builtin-new-${i}-${uid()}`,builtin:true,name,categoryId,cycle,grace,minutes,lastDone:null,baselineDate:null,enabled:true,note:'',snoozeUntil:null,createdAt:Date.now()+i});
+  });
+  return {
+    version:VERSION,
+    categories:Array.isArray(old?.categories)&&old.categories.length?old.categories:[...CATEGORIES],
+    tasks,
+    records,
+    settings:{dailyLimit:Math.min(5,Math.max(2,Number(old?.settings?.dailyLimit)||3)),oneThing:Boolean(old?.settings?.lowEnergy||old?.settings?.oneThing)},
+  };
+}
+
+function loadState(){
+  try{
+    const raw=localStorage.getItem(STORAGE_KEY);
+    if(raw) return sanitize(JSON.parse(raw));
+    const legacy=localStorage.getItem(LEGACY_KEY);
+    if(legacy){ const m=migrateLegacy(JSON.parse(legacy)); localStorage.setItem(STORAGE_KEY,JSON.stringify(m)); return m; }
+  }catch(e){ console.warn(e); }
+  const s=seed(); saveState(s); return s;
+}
+function sanitize(s){
+  const base=seed();
+  return {
+    version:VERSION,
+    categories:Array.isArray(s?.categories)&&s.categories.length?s.categories:base.categories,
+    tasks:Array.isArray(s?.tasks)?s.tasks.map(t=>({
+      id:t.id||uid(), builtin:Boolean(t.builtin), name:t.name||'未命名维护', categoryId:t.categoryId||'personal', cycle:Math.max(1,Number(t.cycle)||7), grace:Math.max(0,Number(t.grace)||0), minutes:Math.max(1,Number(t.minutes)||5),
+      lastDone:t.lastDone||null, baselineDate:t.baselineDate||null, enabled:t.enabled!==false, note:t.note||'', snoozeUntil:t.snoozeUntil||null, createdAt:t.createdAt||Date.now()
+    })):base.tasks,
+    records:Array.isArray(s?.records)?s.records:[],
+    settings:{dailyLimit:Math.min(5,Math.max(2,Number(s?.settings?.dailyLimit)||3)),oneThing:Boolean(s?.settings?.oneThing)},
+  };
+}
+function saveState(s=state){ localStorage.setItem(STORAGE_KEY,JSON.stringify(s)); }
+let state=loadState();
+let currentTab='today';
+let extrasOpen=false;
+
+function categoryName(id){ return state.categories.find(c=>c.id===id)?.name||'未分类'; }
+function anchorOf(t){ return t.lastDone||t.baselineDate||null; }
+function statusOf(t){
+  const anchor=anchorOf(t);
+  if(!anchor) return 'unstarted';
+  const d=diffDays(anchor);
+  if(d < t.cycle) return 'good';
+  if(d <= t.cycle+t.grace) return 'due';
+  return 'priority';
+}
+const statusLabels={unstarted:'尚未开始记录',good:'状态很好',due:'可以安排了',priority:'建议优先'};
+function statusClass(s){ return `status status-${s}`; }
+function daysSinceText(t){
+  if(!anchorOf(t)) return '还没有真实记录';
+  const d=diffDays(anchorOf(t));
+  if(t.lastDone) return d===0?'今天刚完成':`上次完成 ${d} 天前`;
+  return `从 ${fmtDate(t.baselineDate)} 重新排期`;
+}
+function warmLine(t){
+  const s=statusOf(t);
+  if(s==='unstarted') return '从一件小事开始，做完后我再替你记住下次时间。';
+  const d=diffDays(anchorOf(t));
+  if(s==='good') return `现在还不用管它，距离上次安排 ${d} 天。`;
+  if(s==='due') return `已经到一个比较合适的时间点，今天或这两天做都可以。`;
+  return `这件事可以优先照顾一下，做完就从今天重新计时。`;
+}
+function isSnoozed(t){ return t.snoozeUntil && t.snoozeUntil>todayStr(); }
+function urgency(t){
+  const s=statusOf(t); if(s==='priority') return 100 + diffDays(anchorOf(t))/(t.cycle||1); if(s==='due') return 50 + diffDays(anchorOf(t))/(t.cycle||1); if(s==='unstarted') return 10 - Math.min(t.minutes,20)/20; return 0;
+}
+function candidateTasks(){
+  let tasks=state.tasks.filter(t=>t.enabled&&!isSnoozed(t));
+  const due=tasks.filter(t=>['due','priority'].includes(statusOf(t))).sort((a,b)=>urgency(b)-urgency(a));
+  if(due.length) return due;
+  const unstarted=tasks.filter(t=>statusOf(t)==='unstarted').sort((a,b)=>a.minutes-b.minutes||a.createdAt-b.createdAt);
+  return unstarted;
+}
+function todayTasks(){
+  let c=candidateTasks();
+  if(state.settings.oneThing){ c=c.filter(t=>t.minutes<=10); if(!c.length) c=state.tasks.filter(t=>t.enabled&&!isSnoozed(t)&&statusOf(t)==='unstarted'&&t.minutes<=10).sort((a,b)=>a.minutes-b.minutes); return c.slice(0,1); }
+  return c.slice(0,Math.max(1,state.settings.dailyLimit));
+}
+function healthFor(cat){
+  const ts=state.tasks.filter(t=>t.enabled&&t.categoryId===cat);
+  const known=ts.filter(t=>anchorOf(t));
+  if(!known.length) return {score:null,label:'还没有足够记录'};
+  const score=Math.round(known.reduce((sum,t)=>{
+    const d=diffDays(anchorOf(t));
+    if(d<=t.cycle) return sum+100;
+    if(d<=t.cycle+t.grace) return sum+75;
+    return sum+50;
+  },0)/known.length);
+  const due=known.filter(t=>['due','priority'].includes(statusOf(t))).length;
+  return {score,label:due?`${due} 件可以安排`:'目前状态不错'};
+}
+
+function completeTask(id){
+  const t=state.tasks.find(x=>x.id===id); if(!t) return;
+  const today=todayStr();
+  t.lastDone=today; t.baselineDate=null; t.snoozeUntil=null;
+  state.records.unshift({id:uid(),taskId:t.id,taskName:t.name,categoryId:t.categoryId,date:today,at:Date.now()});
+  saveState(); extrasOpen=false; render(); toast('今天维护了一点点');
+}
+function smartSnooze(id){
+  const t=state.tasks.find(x=>x.id===id); if(!t)return;
+  const today=todayStr(); let best=addDays(today,1), bestLoad=Infinity;
+  for(let i=1;i<=3;i++){
+    const day=addDays(today,i);
+    const load=state.tasks.filter(x=>x.id!==id && (x.snoozeUntil===day || (anchorOf(x)&&addDays(anchorOf(x),x.cycle)===day))).length + (i-1)*.4;
+    if(load<bestLoad){bestLoad=load;best=day;}
+  }
+  t.snoozeUntil=best; saveState(); render(); toast(`好，先放到 ${fmtDate(best)}`);
+}
+
+function render(){
+  updateHeader();
+  document.querySelectorAll('.nav-item').forEach(b=>b.classList.toggle('active',b.dataset.tab===currentTab));
+  const view=document.getElementById('view');
+  if(currentTab==='today') view.innerHTML=renderToday();
+  if(currentTab==='maintain') view.innerHTML=renderMaintain();
+  if(currentTab==='records') view.innerHTML=renderRecords();
+  if(currentTab==='settings') view.innerHTML=renderSettings();
+  bindViewEvents();
+}
+function updateHeader(){
+  const h=new Date().getHours(); document.getElementById('greeting').textContent=h<11?'早上好':h<14?'中午好':h<18?'下午好':'晚上好';
+  const map={
+    today:['今天维护一点点就好','不需要把生活一次整理完。'],
+    maintain:['维护','让这些小事安静地待在后台。'],
+    records:['记录','你照顾过的每一件小事都算数。'],
+    settings:['设置','按你的节奏来。']
+  };
+  document.getElementById('pageTitle').textContent=map[currentTab][0]; document.getElementById('pageSub').textContent=map[currentTab][1];
+}
+function taskCard(t,mini=false){
+  const s=statusOf(t);
+  if(mini) return `<article class="card mini-task"><div class="mini-row"><div><h3>${esc(t.name)}</h3><p>${categoryName(t.categoryId)} · ${t.minutes} 分钟 · ${daysSinceText(t)}</p></div><span class="${statusClass(s)}">${statusLabels[s]}</span></div><div class="mini-actions"><button class="btn btn-primary" data-action="done" data-id="${t.id}">完成</button><button class="btn btn-secondary" data-action="snooze" data-id="${t.id}">改天</button><button class="btn btn-ghost" data-action="edit" data-id="${t.id}">详情</button></div></article>`;
+  return `<article class="card hero-card"><div class="task-top"><div><div class="task-name">${esc(t.name)}</div><div class="task-meta"><span>${categoryName(t.categoryId)}</span><span>约 ${t.minutes} 分钟</span><span>${daysSinceText(t)}</span></div></div><span class="${statusClass(s)}">${statusLabels[s]}</span></div><p class="task-note">${warmLine(t)}</p><div class="actions"><button class="btn btn-primary" data-action="done" data-id="${t.id}">完成</button><button class="btn btn-secondary" data-action="snooze" data-id="${t.id}">改天</button><button class="btn btn-ghost" data-action="edit" data-id="${t.id}">详情</button></div></article>`;
+}
+function renderToday(){
+  const picks=todayTasks();
+  const main=picks[0]; const extras=picks.slice(1,Math.min(picks.length,4));
+  const dueAll=state.tasks.filter(t=>t.enabled&&!isSnoozed(t)&&['due','priority'].includes(statusOf(t)));
+  const noDue=!dueAll.length;
+  return `
+    <section class="card quick-mode">
+      <div><strong>今天只做一件</strong><small>帮我挑一个轻松的小维护</small></div>
+      <button class="switch ${state.settings.oneThing?'on':''}" data-action="toggle-one" aria-pressed="${state.settings.oneThing}"><i></i></button>
+    </section>
+    <section class="section">
+      ${main ? `${noDue?'<div class="section-title"><h2>从一件小事开始</h2><span>做完后我再替你计时</span></div>':'<div class="section-title"><h2>最值得做</h2><span>先看这一件就好</span></div>'}${taskCard(main)}` : `<div class="card empty"><div class="big">🌿</div><strong>今天没有必须处理的维护</strong><p>你的生活不用每天都被任务占满。</p></div>`}
+      ${!state.settings.oneThing && extras.length?`<button class="more-toggle" data-action="toggle-more">${extrasOpen?'收起其他建议':'还有 '+extras.length+' 件可以做 ›'}</button>${extrasOpen?`<div class="extra-list">${extras.map(t=>taskCard(t,true)).join('')}</div>`:''}`:''}
+    </section>`;
+}
+function renderMaintain(){
+  return `${state.categories.map(c=>{
+    const h=healthFor(c.id); const tasks=state.tasks.filter(t=>t.categoryId===c.id&&t.enabled);
+    return `<section class="card maintain-group"><div class="group-head"><div><h2>${esc(c.name)}</h2><div class="task-meta"><span>${tasks.length} 项维护</span></div></div><div class="health"><strong>${h.label}</strong>${h.score==null?'':`维护状态 ${h.score}%`}</div></div><div class="task-list">${tasks.map(t=>`<div class="task-row"><button data-action="edit" data-id="${t.id}"><div class="name">${esc(t.name)}</div><div class="sub">每 ${t.cycle} 天 · ${t.minutes} 分钟 · ${daysSinceText(t)}</div></button><span class="${statusClass(statusOf(t))}">${statusLabels[statusOf(t)]}</span></div>`).join('')}</div></section>`;
+  }).join('')}<button class="btn btn-primary btn-block" data-action="new-task">＋ 新建维护</button>`;
+}
+function renderRecords(){
+  if(!state.records.length) return `<div class="card empty"><div class="big">✓</div><strong>还没有完成记录</strong><p>第一次点“完成”以后，这里会开始替你记。</p></div>`;
+  const groups={}; state.records.forEach(r=>(groups[r.date]??=[]).push(r));
+  return Object.entries(groups).sort((a,b)=>b[0].localeCompare(a[0])).map(([date,rs])=>`<section class="record-day"><h3>${date===todayStr()?'今天':fmtDate(date)}</h3><div class="card record-card">${rs.map(r=>`<div class="record-item"><div class="left"><div class="tick">✓</div><div>${esc(r.taskName)}</div></div><small>${categoryName(r.categoryId)}</small></div>`).join('')}</div></section>`).join('');
+}
+function renderSettings(){
+  return `<section class="card settings-card"><h2>每天最多推荐</h2><p>首页不会把所有维护一次塞给你。</p><div class="segment">${[2,3,4,5].map(n=>`<button data-action="limit" data-value="${n}" class="${state.settings.dailyLimit===n?'active':''}">${n} 件</button>`).join('')}</div></section>
+  <section class="card settings-card"><h2>重新开始排期</h2><p>如果很久没顾上，可以从今天重新安排周期；不会写入“完成记录”。</p><button class="btn btn-terra btn-block" data-action="restart">从今天重新排期</button></section>
+  <section class="card settings-card"><h2>备份</h2><p>数据默认只保存在这台设备的浏览器里。建议偶尔导出一次。</p><div class="actions"><button class="btn btn-secondary" data-action="export">导出 JSON</button><button class="btn btn-secondary" data-action="import">导入 JSON</button><input id="importFile" type="file" accept=".json,application/json" hidden></div></section>
+  <section class="card settings-card"><h2>数据说明</h2><p>“尚未开始记录”的任务不会算逾期，也不会拉低维护状态。第一次真正完成后才开始计周期。</p></section>`;
+}
+
+function bindViewEvents(){
+  document.querySelectorAll('[data-action]').forEach(el=>el.addEventListener('click',handleAction));
+}
+function handleAction(e){
+  const a=e.currentTarget.dataset.action, id=e.currentTarget.dataset.id;
+  if(a==='done') completeTask(id);
+  if(a==='snooze') smartSnooze(id);
+  if(a==='edit') openTaskModal(id);
+  if(a==='new-task') openTaskModal(null);
+  if(a==='toggle-one'){ state.settings.oneThing=!state.settings.oneThing; saveState(); extrasOpen=false; render(); }
+  if(a==='toggle-more'){ extrasOpen=!extrasOpen; render(); }
+  if(a==='limit'){ state.settings.dailyLimit=Number(e.currentTarget.dataset.value); saveState(); render(); }
+  if(a==='restart') restartSchedule();
+  if(a==='export') exportJSON();
+  if(a==='import') document.getElementById('importFile').click();
+}
+
+document.addEventListener('change',e=>{
+  if(e.target?.id==='importFile' && e.target.files?.[0]) importJSON(e.target.files[0]);
+});
+document.querySelectorAll('.nav-item').forEach(b=>b.addEventListener('click',()=>{currentTab=b.dataset.tab; extrasOpen=false; render();}));
+
+function openTaskModal(id){
+  const existing=id?state.tasks.find(t=>t.id===id):null;
+  const t=existing?{...existing}:{id:uid(),builtin:false,name:'',categoryId:'personal',cycle:7,grace:2,minutes:5,lastDone:null,baselineDate:null,enabled:true,note:'',snoozeUntil:null,createdAt:Date.now()};
+  document.getElementById('modalRoot').innerHTML=`<div class="modal-backdrop" id="backdrop"><div class="modal"><div class="modal-head"><h2>${existing?'维护详情':'新建维护'}</h2><button class="close" id="closeModal">×</button></div>${existing?`<div class="task-top"><div><div class="task-name" style="font-size:18px">${esc(t.name)}</div><div class="task-meta"><span>${daysSinceText(t)}</span></div></div><span class="${statusClass(statusOf(t))}">${statusLabels[statusOf(t)]}</span></div>`:''}
+  <div class="field"><label>任务名</label><input id="fName" value="${escAttr(t.name)}" placeholder="例如：给绿萝浇水"></div>
+  <div class="field"><label>分类</label><select id="fCat">${state.categories.map(c=>`<option value="${c.id}" ${c.id===t.categoryId?'selected':''}>${esc(c.name)}</option>`).join('')}</select></div>
+  <div class="grid-3"><div class="field"><label>每几天一次</label><input id="fCycle" type="number" min="1" value="${t.cycle}"></div><div class="field"><label>宽限天数</label><input id="fGrace" type="number" min="0" value="${t.grace}"></div><div class="field"><label>耗时分钟</label><input id="fMinutes" type="number" min="1" value="${t.minutes}"></div></div>
+  <div class="field"><label>上次真实完成日期（可留空）</label><input id="fLast" type="date" value="${t.lastDone||''}" max="${todayStr()}"></div>
+  <div class="field"><label>备注</label><textarea id="fNote" rows="3" placeholder="可选">${esc(t.note||'')}</textarea></div>
+  <div class="inline-check"><span>启用这项维护</span><input id="fEnabled" type="checkbox" ${t.enabled?'checked':''}></div>
+  <div class="actions"><button class="btn btn-primary" id="saveTask">保存</button>${existing?`<button class="btn btn-secondary" id="doneModal">现在完成</button>`:''}</div>
+  ${existing?`<div class="danger-zone"><button class="btn btn-ghost" id="deleteTask">删除这个任务</button></div>`:''}
+  </div></div>`;
+  const close=()=>document.getElementById('modalRoot').innerHTML='';
+  document.getElementById('closeModal').onclick=close;
+  document.getElementById('backdrop').addEventListener('click',e=>{if(e.target.id==='backdrop')close();});
+  document.getElementById('saveTask').onclick=()=>{
+    const name=document.getElementById('fName').value.trim(); if(!name){alert('给它起个名字吧');return;}
+    Object.assign(t,{name,categoryId:document.getElementById('fCat').value,cycle:Math.max(1,Number(document.getElementById('fCycle').value)||1),grace:Math.max(0,Number(document.getElementById('fGrace').value)||0),minutes:Math.max(1,Number(document.getElementById('fMinutes').value)||1),lastDone:document.getElementById('fLast').value||null,note:document.getElementById('fNote').value.trim(),enabled:document.getElementById('fEnabled').checked});
+    if(existing) Object.assign(existing,t); else state.tasks.push(t); saveState(); close(); render(); toast(existing?'已保存':'已添加');
+  };
+  if(existing){
+    document.getElementById('doneModal').onclick=()=>{close();completeTask(existing.id);};
+    document.getElementById('deleteTask').onclick=()=>{if(confirm(`删除“${existing.name}”？`)){state.tasks=state.tasks.filter(x=>x.id!==existing.id);saveState();close();render();toast('已删除');}};
+  }
+}
+
+function restartSchedule(){
+  if(!confirm('从今天重新排期？这不会新增完成记录，也不会删除历史记录。')) return;
+  const today=todayStr();
+  state.tasks.forEach(t=>{ if(t.enabled){t.baselineDate=today; t.snoozeUntil=null;} });
+  saveState(); render(); toast('已从今天重新排期');
+}
+function exportJSON(){
+  const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`小维护-${todayStr()}.json`; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),2000); toast('备份已导出');
+}
+async function importJSON(file){
+  try{ const txt=await file.text(); const obj=JSON.parse(txt); const next=obj.version===1?migrateLegacy(obj):sanitize(obj); state=next; saveState(); render(); toast('备份已恢复'); }
+  catch(e){ alert('这个文件看起来不是有效的小维护备份。'); }
+}
+function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(toast._timer); toast._timer=setTimeout(()=>t.classList.remove('show'),1800); }
+function esc(s=''){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+function escAttr(s=''){return esc(s).replace(/'/g,'&#39;');}
+
+if('serviceWorker' in navigator && location.protocol!=='file:'){
+  window.addEventListener('load', async ()=>{
+    try{
+      const reg = await navigator.serviceWorker.register('./sw.js', {scope:'./'});
+      reg.update().catch(()=>{});
+    }catch(e){}
+  });
+}
+render();
+
+</script>
+</body>
+</html>
