@@ -1,0 +1,26 @@
+{
+  "name": "小维护",
+  "short_name": "小维护",
+  "description": "替你记住那些不紧急、但值得定期照顾的小事。",
+  "id": "./",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#F8F4EE",
+  "theme_color": "#F8F4EE",
+  "lang": "zh-CN",
+  "icons": [
+    {
+      "src": "./icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "./icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
